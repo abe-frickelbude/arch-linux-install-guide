@@ -25,15 +25,29 @@
     The syntax for quickly specifying sizes is like `+15G` would mean `15 GBytes` from whatever "first sector" might be
    5. `t` to switch partition types -> `l` shows a list of available partition types. Type for EFI boot is `1`, for root it is `24`
    6. `w` to finalize and write out the new partitions.
+   7. For the further steps below, the example is going to assume that the EFI boot partition resides on `/dev/sda1`, the swap partion - on
+     `/dev/sda2` and the root partition - on `/dev/sda3`
 
-5. Create filesystems
-   1. `mkfs.msdos -F32 /dev/<sdX for the EFI boot partition>` to create FAT32 on the EFI boot partition
-   2. `mkswap /dev/<sdX for the swap partition>` if using a swap partition followed by `swapon`(possibly a bad idea if installing on an SSD)
-   3. ``mkfs.ext4 ./dev/<sdX for the root partition>`` to create EXT4 on the root partition
+5. Create file systems
+   1. `mkfs.msdos -F32 /dev/sda1` to create FAT32 on the EFI boot partition
+   2. `mkswap /dev/sda2` if using a swap partition followed by `swapon`(possibly a bad idea if installing on an SSD)
+   3. `mkfs.ext4 ./dev/sda3` to create EXT4 on the root partition
 
 6. Temporarily mount file systems for installation
+
+    1. Note: mounting partitions into `/mnt` may look a little weird, but is only during the installation process (because pacstrap needs a target to work with), and will **not** affect the final `fstab` mount points in any way!
+    2. `mkdir /mnt/boot`
+    3. `mount /dev/sda1 /mnt/boot`
+    4. `mount /dev/sda3 /mnt`
+
 7. Bootstrap installation
+   * `pacstrap /mnt base` will initiate installation of base system packages into `/` and `/boot` currently mounted under `/mnt`
+  
 8. Create `fstab`
+   1. `genfstab -U /mnt >> /mnt/etc/fstab`
+   2. `less /mnt/etc/fstab` to make sure `fstab` was generated OK
+   3. Take a screenshot of `fstab` contents (or write down the mapping for the root partition, especially the partition UUID)
+
 9.  TODO setup systemd-boot
 
 ## Adding full system encryption with dmcrypt and LUKS
