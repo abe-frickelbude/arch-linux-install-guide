@@ -87,3 +87,5 @@
 * <https://wiki.archlinux.org/index.php/installation_guide>
 * <https://gist.github.com/kevinwright/6884737>
 * <https://www.youtube.com/watch?v=2zciJYPwUWQ>
+* Encrypted Arch Setup: <https://www.youtube.com/watch?v=rT7h62OYQv8>
+* Manual mounting of encrypted partitions: <https://evilshit.wordpress.com/2012/10/29/how-to-mount-luks-encrypted-partitions-manually>
