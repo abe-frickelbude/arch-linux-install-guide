@@ -48,7 +48,34 @@
    2. `less /mnt/etc/fstab` to make sure `fstab` was generated OK
    3. Take a screenshot of `fstab` contents (or write down the mapping for the root partition, especially the partition UUID)
 
-9.  TODO setup systemd-boot
+9. Basic configuration
+   1.  `arch-chroot /mnt` change root to /mnt
+   2.  `ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime` to set the local timezone
+   3.  `hwclock --systohc` to set the hardware clock
+   4.  `vi /etc/locale.gen` and then uncomment the en_US.UTF-8
+   5.  `locale-gen` to generate the locale
+   6.  `vi /etc/locale.conf` and add the line `LANG=en_US.UTF-8`
+
+10. Network configuration
+    1.  `vi /etc/hostname` and add e.g. `arch-machine`
+    2.  `vi /etc/hosts` and the lines ``127.0.0.1   arch-machine`, `::1 arch-machine`, and `127.0.1.1   arch-machine.localdomain  arch-machine`
+
+11. Security configuration
+    1.  `passwd` and set root password (do NOT disable the root account just yet!)
+    2.  Install vim by ``pacman -S vim`
+    3.  Install sudo by `pacman -S sudo`
+    4.  Run `visudo`, look for the line `%wheel ALL=(ALL) NOPASSWD: ALL`, uncomment it and save the changes
+
+12. Configure systemd-boot
+    1.  Install `systemd-boot` via `bootctl --path=/boot install`
+    2.  `cd /boot/loader`
+    3.  Edit `loader.conf`, change `default` to `arch-*`, adjust timeout as desired
+    4.  `cd /boot/loader/entries`, create a file called `arch.conf`
+    5.  Edit `arch.conf` and add the following lines:
+        *   `title   Arch Linux`
+        *   `linux   /vmlinuz-linux`
+        *   `initrd  /initramfs-linux.img`
+        *   `options root=UUID=[UUID saved in step 8.3] rw`
 
 ## Adding full system encryption with dmcrypt and LUKS
 
@@ -57,5 +84,6 @@
 ## Misc
 
 ## Links, Tutorials etc
-
-<https://www.youtube.com/watch?v=2zciJYPwUWQ>
+* <https://wiki.archlinux.org/index.php/installation_guide>
+* <https://gist.github.com/kevinwright/6884737>
+* <https://www.youtube.com/watch?v=2zciJYPwUWQ>
