@@ -156,4 +156,5 @@ same behavior).
 * There's probably a bug in the current _Manjaro_ implementation of the post-install hook that updates the systemd-boot entries.
   Upon installation of new kernels, this leads to _all_ entries in `/boot/loader/entries` being broken due to incorrect syntax
   for the kernel `options` line w.r.t to dmcrypt/LUKS. See the above section `[5] Review configuration files` for manually fixing
-  the entries.  
+  the entries.  Also, one can simply make a backup of all existing entries + loader.conf and simply copy them back to the boot
+  partition once a new kernel is installed.
