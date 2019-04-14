@@ -39,19 +39,34 @@
   6. Skip `[8] Configure mirror list` and select `[9] refresh pacman keys` - this will take a while and automatically return you 
      back to the menu upon completion
   7. Pick `[11] go back` to return to the main installer menu
-* [2] **TODO Install system**      
+   
+* [2] **Install desktop system**
+  1. Pick `Install desktop system`.
+  2. Pick `yay + base-devel` as well as `linux51` (as of this writing)
+  3. Pick at least `kernel-headers` on the next screen
+  4. Pick the desired desktop environment on the next screen
+  5. Answer `no` to additional packages question
+  6. Answer `full` to the `full` vs `minimal` question
+  7. Wait for the installation to complete - this takes a while and will generally have to download ~ 1 GB data
+  8. After that, a screen will automatically come up and ask to install free/proprietary graphics drivers - select according to your system
 
+* [3] **Install bootloader**
+  * Select `systemd-boot` from the available bootloaders and confirm with `Yes` on the next screen
 
-## Additional packages
+* [4] **Configure base**
+  1. `Generate FSTAB` - select the second option (device name)
+  2. `Set hostname` - pick a hostname
+  3. `Set system locale` - select and set an appropriate locale,  e.g. `en_US.UTF-8`
+  4.  `Set desktop keyboard layout` - ditto
+  5.  `Set timezone and clock` - pick a timezone, and set the clock either to UTC or localtime
+  6.  `Set root password` - this is the password for the root user (which is not often used, but pick a password just in case)
+  7.  `Add new user(s)` - Use this to create a new non-root user for yourself. You have a choice of username, password and the default shell
+  8.  Go back one level
 
-* `pacman -S terminus-font` for extra console fonts (required by the `consolefont` hook in `initramfs`)
-
-## Modifications to systemd-boot configuration
+* [5] **Review configuration files** (item `[4 System tweaks]` can be skipped for now) 
 
 ---
-
 **This is one of the most critical puzzle pieces not described adequately by the ArchLinux wiki and Manjaro documentation!**
-
 **Do not reboot yet!** 
 
 (If you do accidentally reboot before this point, the steps below are still possible, but will require booting the live Architect
@@ -66,16 +81,19 @@ while the encrypted LUKS partition is on `/dev/sda2`
 
 ---
 
-From the menu, select "chroot into installation" and do the following:
-
-* `pacman -S vim` unless already installed
-* Edit the `/boot/loader/loader.conf`, set the timeout as desired
-* Edit _at least_ the `/boot/loader/entries/manjarolinux[X].conf` where `[X]` corresponds to the `default` entry in `loader.conf`
-  and modify the options line as follows:<br/><br/> 
-  `options rw cryptdevice=/dev/sda2:cryptroot root=/dev/mapper/cryptroot`
-* Save the config file, reboot, and after a few moment you should see the passphrase prompt provided by the initrd `encrypt` hook
-
+  1. Pick `systemd-boot` from here, this will open the loader configuration entries in Nano
+  2. In Nano, edit the `options` line to match this: `options rw cryptdevice=/dev/sda2:cryptroot root=/dev/mapper/cryptroot` 
+  3. Use `Ctrl-O` followed by `Ctrl-X` to write out changes and exit Nano
+  4. The installer will automatically open further systemd-boot config entries - repeat (3) until done
+  5. Go back to the main installer menu
 ---
+
+* [6] **Done**
+  * At this point, if everything worked correctly, there should be one last screen "Close installer?", answer with "yes"
+  * Now you can do `sudo reboot now` to restart the system 
+
+After reboot in a few moments you should see the passphrase prompt provided by the initrd `encrypt` hook and be able
+to unlock the root partition with the previously picked pass phrase
 
 ## Post-install
 
@@ -97,6 +115,18 @@ If network is down after reboot (especially in a CLI system), do the following:
 * Use `pacman -S networkmanager` to install the Gnome network manager
 * Use `systemctl enable NetworkManager` to activate the NetworkManager systemd service
 
+## Additional packages
+
+* `pacman -S terminus-font` for extra console fonts (required by the `consolefont` hook in `initramfs`)
+
+## Optional: modifications to systemd-boot configuration
+
+* `pacman -S vim` unless already installed
+* Edit the `/boot/loader/loader.conf`, set the timeout as desired 
+* You can also adjust the default entry to `manjaro-*`, this will instruct `systemd-boot` to automatically pick up all entries 
+  prefixed with "manjaro" (useful if installing multiple kernels)
+
+
 ## Optional: adjust virtual console font
 
 * Edit the `etc/vconsole.conf` file to set a different console font. See in `/usr/share/kbd/consolefonts` for a list of available fonts.
@@ -109,3 +139,21 @@ use `mkinitcpio` to rebuild the initramfs image(s), but the script is incomplete
 
 * `pacman -S ttf-dejavu` for DejaVu TTF fonts (required by the `plymouth / plymouth-encrypt` hooks)
 * Follow this setup guide <https://wiki.archlinux.org/index.php/plymouth>
+
+
+## Caveats
+
+Some of these are assumed to be Manjaro-specific until proven otherwise (i.e. if "stock" Arch Linux would also exhibit the
+same behavior).
+
+### Kernel upgrades
+
+* Can potentially produce initramfs images with broken VFAT filesystem support, resulting in the inability to mount the
+  EFI partition on startup...
+
+### Systemd-Boot
+
+* There's probably a bug in the current _Manjaro_ implementation of the post-install hook that updates the systemd-boot entries.
+  Upon installation of new kernels, this leads to _all_ entries in `/boot/loader/entries` being broken due to incorrect syntax
+  for the kernel `options` line w.r.t to dmcrypt/LUKS. See the above section `[5] Review configuration files` for manually fixing
+  the entries.  
