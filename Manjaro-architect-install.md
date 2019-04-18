@@ -31,7 +31,7 @@
   5. `[7] Mount partitions` - The installer will ask for specific partitions to pick, observe the box descriptions carefully! 
      1. Hit "ok" in the warning window
      2. Pick the root partition, this should be the `/dev/mapper/cryptroot` entry
-     3. Pick the `ext4` file system, answer `Yes` in the warning box after that, accept the default flags in the box after that with `OK` and       confirm
+     3. Pick the `btrfs` file system, answer `Yes` in the warning box after that, tuff off the `autodefrag` flag, turn on the `ssd` flag if installing on a SSD in the box after that with `OK` and confirm
      4. Optionally select the SWAP partition and use the default suggested size
      5. In the `Select additional partitions` box, pick `Done -` and hit `OK`
      6. In the `Select UEFI partition` box, pick the UEFI partition created in step `[2]` above, confirm format, and in the next box
@@ -115,6 +115,12 @@ If network is down after reboot (especially in a CLI system), do the following:
 * Use `pacman -S networkmanager` to install the Gnome network manager
 * Use `systemctl enable NetworkManager` to activate the NetworkManager systemd service
 
+## mkinitcpio.conf changes
+
+* Move the `keyboard` hook _before_ of the `encrypt` hook as described here <https://wiki.archlinux.org/index.php/Dm-crypt/Swap_encryption>
+  to ensure support for a USB keyboard!
+* Don't forget to regenerate initramfs after any configuration changes!
+
 ## Additional packages
 
 * `pacman -S terminus-font` for extra console fonts (required by the `consolefont` hook in `initramfs`)
@@ -125,7 +131,6 @@ If network is down after reboot (especially in a CLI system), do the following:
 * Edit the `/boot/loader/loader.conf`, set the timeout as desired 
 * You can also adjust the default entry to `manjaro-*`, this will instruct `systemd-boot` to automatically pick up all entries 
   prefixed with "manjaro" (useful if installing multiple kernels)
-
 
 ## Optional: adjust virtual console font
 
@@ -139,6 +144,22 @@ use `mkinitcpio` to rebuild the initramfs image(s), but the script is incomplete
 
 * `pacman -S ttf-dejavu` for DejaVu TTF fonts (required by the `plymouth / plymouth-encrypt` hooks)
 * Follow this setup guide <https://wiki.archlinux.org/index.php/plymouth>
+
+## Recommended: use block device UUIDs for partitions
+
+* Reasons are outlined here: <https://wiki.archlinux.org/index.php/Persistent_block_device_naming>
+* Use `sudo blkid` to display block device UUIDs
+* Note that for all configuration purposes (e.g. for kernel options) the `UUID` value is required, not the `PARTUUID` one!
+
+## Optional: encrypted SWAP partition
+
+* The following discussion on stackexchange provided the correct answer: 
+<https://serverfault.com/questions/312123/how-to-create-a-randomly-keyed-encrypted-swap-partition-referring-to-it-by-uu>
+* See this <https://bbs.archlinux.org/viewtopic.php?id=183045> 
+  and this <https://wiki.archlinux.org/index.php/Dm-crypt/System_configuration#Using_sd-encrypt_hook> for correctly setting up 
+  the systemd hooks in mkinitcpio.conf
+* Note that in order for the crypttab to be properly processed by systemd boot, the kernel options in the boot loader
+  configuration **MUST** be prefixed with `rd.`, otherwise everything in `/etc/cryptab` will be ignored!   
 
 
 ## Caveats
