@@ -17,12 +17,21 @@
 * In a system containing more than one physical disk, it is important to keep track of the `/dev/sdX` partition
   mappings during the installation to not accidentally overwrite existing data during partitioning/mounting steps!
 
+## Target configuration
+
+* Manjaro Linux installation 
+* Fully encrypted root partition using BTRFS file system
+* Encrypted swap partition (using randomly generated password, re-initialized on every boot, no suspend-to-disk     support)
+* slightly customized initramfs using systemd init instead of udev/busybox
+* Desktop environment of your choice (if any) or a CLI system
+
 ## Setup steps
 
 * Boot into Manjaro Architect Live ISO
 * Log in with `manjaro:manjaro` and start `setup`  
 * [1] **Prepare installation**
   1. `Set virtual console` - use this to set the desired keymap (default is en_US.UTF-8)
+  **TODO: rewrite partitioning section for manual partitioning (due to custom swap partition)**
   2. `Partition disk` -> select device and use automatic partitioning as suggested by the installer. Afterwards, use the `List devices` menu
      item to examine the partition descriptors, you'll need them for the "mount partitions" step below.
   3. `LUKS encryption` -> use "Automatic LUKS encryption", select the "/" partition, leave the default "cryptroot" 
@@ -34,14 +43,12 @@
      3. Pick the `btrfs` file system, answer `Yes` in the warning box after that, tuff off the `autodefrag` flag, turn on the `ssd` flag if installing on a SSD in the box after that with `OK` and confirm
      4. Optionally select the SWAP partition and use the default suggested size
      5. In the `Select additional partitions` box, pick `Done -` and hit `OK`
-     6. In the `Select UEFI partition` box, pick the UEFI partition created in step `[2]` above, confirm format, and in the next box
-        be sure to pick the `/boot` mount point instead of `/boot/efi` as this is required for proper operation of `systemd-boot`
-  6. Skip `[8] Configure mirror list` and select `[9] refresh pacman keys` - this will take a while and automatically return you 
-     back to the menu upon completion
+     6. In the `Select UEFI partition` box, pick the UEFI partition created in step `[2]` above, confirm format, and in the next box be sure to pick the `/boot` mount point instead of `/boot/efi` as this is required for proper operation of `systemd-boot`
+  6. Skip `[8] Configure mirror list` and select `[9] refresh pacman keys` - this will take a while and automatically         return you back to the menu upon completion
   7. Pick `[11] go back` to return to the main installer menu
    
-* [2] **Install desktop system**
-  1. Pick `Install desktop system`.
+* [2] **Install system**
+  1. Pick `Install desktop system` or `Install CLI system` as desired
   2. Pick `yay + base-devel` as well as `linux51` (as of this writing)
   3. Pick at least `kernel-headers` on the next screen
   4. Pick the desired desktop environment on the next screen
@@ -54,7 +61,7 @@
   * Select `systemd-boot` from the available bootloaders and confirm with `Yes` on the next screen
 
 * [4] **Configure base**
-  1. `Generate FSTAB` - select the second option (device name)
+  1. `Generate FSTAB` - select the default option (using UUIDs)
   2. `Set hostname` - pick a hostname
   3. `Set system locale` - select and set an appropriate locale,  e.g. `en_US.UTF-8`
   4.  `Set desktop keyboard layout` - ditto
@@ -66,18 +73,16 @@
 * [5] **Review configuration files** (item `[4 System tweaks]` can be skipped for now) 
 
 ---
-**This is one of the most critical puzzle pieces not described adequately by the ArchLinux wiki and Manjaro documentation!**
-**Do not reboot yet!** 
+**This is one of the most critical puzzle pieces not described adequately by the ArchLinux wiki and Manjaro documentation!** **Do not reboot yet!** 
 
-(If you do accidentally reboot before this point, the steps below are still possible, but will require booting the live Architect
-system and manually mounting the EFI boot partition to gain access to the config files)
+(If you do accidentally reboot before this point, the steps below are still possible, but will require booting the live Architect system and manually mounting the EFI boot partition to gain access to the config files)
 
-Apparently, the Manjaro Architect installer contains a bug (or the usage of the installer options is counter-intuitive enough to make it
-look like a bug) which prevents it from correctly constructing the loader entry files for `systemd-boot` when using 
-dmcrypt / LUKS encryption.
+Apparently, the Manjaro Architect installer contains a bug (or the usage of the installer options is counter-intuitive enough to make it look like a bug) which prevents it from correctly constructing the loader entry files for `systemd-boot` when using dmcrypt / LUKS encryption.
 
-The following is a series of steps to rectify this problem. As an example, the instructions assume the EFI partition is on `/dev/sda1`
-while the encrypted LUKS partition is on `/dev/sda2`
+The following is a series of steps to rectify this problem. As an example, the instructions assume the EFI partition is on `/dev/sda1` while the encrypted LUKS partition is on `/dev/sda2`
+
+**Usage of /dev/sdX names is temporary here - just enough to get a functioning system going. These should
+be adjusted to use UUIDs (or UUID and label) once you have a working system**
 
 ---
 
@@ -99,9 +104,9 @@ to unlock the root partition with the previously picked pass phrase
 
 ---
 
-## Activate network interfaces and install NetworkManager
+## (CLI system) initialize network interfaces
 
-If network is down after reboot (especially in a CLI system), do the following:
+If network is down after reboot do the following:
 
 * Use `ip link` to see the status of network interfaces, look for e.g. `eth0` (or enp0s3 or similar if in a VirtualBox VM)
   and see if the status is "DOWN". 
@@ -110,16 +115,32 @@ If network is down after reboot (especially in a CLI system), do the following:
 * Using `networkctl` confirm that the ethX interface is now "routable" (alternatively, the output of `ip link show dev ethX` should
   now contain "UP" in the <...>)
 
-## Install NetworkManager for automatic network connection management:
+## (CLI System) Install NetworkManager for automatic network connection management:
 
 * Use `pacman -S networkmanager` to install the Gnome network manager
 * Use `systemctl enable NetworkManager` to activate the NetworkManager systemd service
 
-## mkinitcpio.conf changes
+## Swithing initramfs from udev (busybox) init to systemd
 
-* Move the `keyboard` hook _before_ of the `encrypt` hook as described here <https://wiki.archlinux.org/index.php/Dm-crypt/Swap_encryption>
-  to ensure support for a USB keyboard!
-* Don't forget to regenerate initramfs after any configuration changes!
+1. Modify the HOOKS line to contain the following items: 
+`HOOKS=(base systemd keyboard sd-vconsole sd-encrypt autodetect modconf block filesystems)`
+
+* Explanations
+   * Moves `keyboard` after `base` but before everything else to ensure early initialization of
+     keyboard drivers (including USB keyboards) for supporting e.g. a keyboard connected to a laptop
+   * The above is important for `sd-encrypt` hook to allow entering the pass phrase  
+   * Replaces `udev` with `systemd` to switch to systemd-based init
+   * Replaces `keymap` and `consolefont` with their systemd counterpart `sd-vconsole`. This also
+     respects the `/etc/vconsole.conf` settings for keymap and font
+   * Replaces `encrypt` with `sd-encrypt`  
+   * Regenerate initramfs using `mkinitcpio -p <preset>`
+
+2. Adjust systemd-boot configuration:
+
+* Change kernel options line to `options	rd.luks.name=<UUID>=cryptroot root=/dev/mapper/cryptroot rw rootflags=subvol=/`
+  * **Watch out for the correct format for the rd.luks.name above!**
+  * The _correct_ form of `rd.luks.name` is `rd.luks.name=<device UUID>=<mapper name>`
+
 
 ## Additional packages
 
@@ -156,10 +177,11 @@ use `mkinitcpio` to rebuild the initramfs image(s), but the script is incomplete
 * The following discussion on stackexchange provided the correct answer: 
 <https://serverfault.com/questions/312123/how-to-create-a-randomly-keyed-encrypted-swap-partition-referring-to-it-by-uu>
 * See this <https://bbs.archlinux.org/viewtopic.php?id=183045> 
-  and this <https://wiki.archlinux.org/index.php/Dm-crypt/System_configuration#Using_sd-encrypt_hook> for correctly setting up 
-  the systemd hooks in mkinitcpio.conf
+  and this <https://wiki.archlinux.org/index.php/Dm-crypt/System_configuration#Using_sd-encrypt_hook> for correctly setting up the systemd hooks in mkinitcpio.conf
 * Note that in order for the crypttab to be properly processed by systemd boot, the kernel options in the boot loader
   configuration **MUST** be prefixed with `rd.`, otherwise everything in `/etc/cryptab` will be ignored!   
+
+
 
 
 ## Caveats
@@ -167,15 +189,17 @@ use `mkinitcpio` to rebuild the initramfs image(s), but the script is incomplete
 Some of these are assumed to be Manjaro-specific until proven otherwise (i.e. if "stock" Arch Linux would also exhibit the
 same behavior).
 
+### Failure to suspend the system due to tpm errors
+
+* Confirmed:disabling tpm* kernel modules fixes the suspend
+* TODO take this <https://lists.archlinux.org/pipermail/arch-general/2011-January/017818.html> and
+rework into a guide for blacklisting tpm* kernel modules on startup 
+* Follow this <https://wiki.archlinux.org/index.php/Kernel_module#Blacklisting> for blacklisting modules
+
 ### Kernel upgrades
 
-* Can potentially produce initramfs images with broken VFAT filesystem support, resulting in the inability to mount the
-  EFI partition on startup...
+* Can potentially produce initramfs images with broken VFAT filesystem support, resulting in the inability to mount the EFI partition on startup...
 
 ### Systemd-Boot
 
-* There's probably a bug in the current _Manjaro_ implementation of the post-install hook that updates the systemd-boot entries.
-  Upon installation of new kernels, this leads to _all_ entries in `/boot/loader/entries` being broken due to incorrect syntax
-  for the kernel `options` line w.r.t to dmcrypt/LUKS. See the above section `[5] Review configuration files` for manually fixing
-  the entries.  Also, one can simply make a backup of all existing entries + loader.conf and simply copy them back to the boot
-  partition once a new kernel is installed.
+* There's probably a bug in the current _Manjaro_ implementation of the post-install hook that updates the systemd-boot entries. Upon installation of new kernels, this leads to _all_ entries in `/boot/loader/entries` being broken due to incorrect syntax for the kernel `options` line w.r.t to dmcrypt/LUKS. See the above section `[5] Review configuration files` for manually fixing the entries.  Also, one can simply make a backup of all existing entries + loader.conf and simply copy them back to the boot `partition once a new kernel is installed.
