@@ -104,7 +104,7 @@ to unlock the root partition with the previously picked pass phrase
 
 ---
 
-## (CLI system) initialize network interfaces
+### (CLI system) initialize network interfaces
 
 If network is down after reboot do the following:
 
@@ -115,18 +115,18 @@ If network is down after reboot do the following:
 * Using `networkctl` confirm that the ethX interface is now "routable" (alternatively, the output of `ip link show dev ethX` should
   now contain "UP" in the <...>)
 
-## (CLI System) Install NetworkManager for automatic network connection management:
+### (CLI System) Install NetworkManager for automatic network connection management:
 
 * Use `pacman -S networkmanager` to install the Gnome network manager
 * Use `systemctl enable NetworkManager` to activate the NetworkManager systemd service
 
-## Swithing initramfs from udev (busybox) init to systemd
+### Swithing initramfs from udev (busybox) init to systemd
 
 1. Modify the HOOKS line to contain the following items: 
-`HOOKS=(base systemd keyboard sd-vconsole sd-encrypt autodetect modconf block filesystems)`
+``HOOKS=(base systemd keyboard sd-vconsole sd-encrypt autodetect modconf block filesystems)``
 
 * Explanations
-   * Moves `keyboard` after `base` but before everything else to ensure early initialization of
+   * Moves `keyboard` after `base` and `systemd` but before everything else to ensure early initialization of
      keyboard drivers (including USB keyboards) for supporting e.g. a keyboard connected to a laptop
    * The above is important for `sd-encrypt` hook to allow entering the pass phrase  
    * Replaces `udev` with `systemd` to switch to systemd-based init
@@ -142,22 +142,22 @@ If network is down after reboot do the following:
   * The _correct_ form of `rd.luks.name` is `rd.luks.name=<device UUID>=<mapper name>`
 
 
-## Additional packages
+### Additional packages
 
 * `pacman -S terminus-font` for extra console fonts (required by the `consolefont` hook in `initramfs`)
 
-## Optional: modifications to systemd-boot configuration
+### Optional: modifications to systemd-boot configuration
 
 * `pacman -S vim` unless already installed
 * Edit the `/boot/loader/loader.conf`, set the timeout as desired 
 * You can also adjust the default entry to `manjaro-*`, this will instruct `systemd-boot` to automatically pick up all entries 
   prefixed with "manjaro" (useful if installing multiple kernels)
 
-## Optional: adjust virtual console font
+### Optional: adjust virtual console font
 
 * Edit the `etc/vconsole.conf` file to set a different console font. See in `/usr/share/kbd/consolefonts` for a list of available fonts.
 
-## Optional: add plymouth for pretty startup / LUKS password screen
+### Optional: add plymouth for pretty startup / LUKS password screen
 
 Note: once again facing some tomfoolery here... The `plymouth` package contains a installation script that will automatically
 use `mkinitcpio` to rebuild the initramfs image(s), but the script is incomplete - it does not add the plymouth hooks to the
@@ -166,13 +166,13 @@ use `mkinitcpio` to rebuild the initramfs image(s), but the script is incomplete
 * `pacman -S ttf-dejavu` for DejaVu TTF fonts (required by the `plymouth / plymouth-encrypt` hooks)
 * Follow this setup guide <https://wiki.archlinux.org/index.php/plymouth>
 
-## Recommended: use block device UUIDs for partitions
+### Recommended: use block device UUIDs for partitions
 
 * Reasons are outlined here: <https://wiki.archlinux.org/index.php/Persistent_block_device_naming>
 * Use `sudo blkid` to display block device UUIDs
 * Note that for all configuration purposes (e.g. for kernel options) the `UUID` value is required, not the `PARTUUID` one!
 
-## Optional: encrypted SWAP partition
+### Optional: encrypted SWAP partition
 
 * The following discussion on stackexchange provided the correct answer: 
 <https://serverfault.com/questions/312123/how-to-create-a-randomly-keyed-encrypted-swap-partition-referring-to-it-by-uu>

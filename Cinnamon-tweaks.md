@@ -5,7 +5,7 @@
 
 * Be aware that the "overall appearance" is a bit of a moot point in GTK(3), as various visuals have to be 
   configured individually, i.e. window decorations, control styles, desktop theme etc. Therefore, some work
-  is generally required to install and enable the desired appearance.
+  is generally required to install and enable the desired appearance traits.
 * Install ocs-store for easier access to themes:
     * Install `appimagelauncher` via AUR
     * Start `appimagelauncherd` in a terminal and leave it running
