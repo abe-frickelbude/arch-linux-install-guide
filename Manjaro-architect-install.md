@@ -140,6 +140,8 @@ If network is down after reboot do the following:
 * Change kernel options line to `options	rd.luks.name=<UUID>=cryptroot root=/dev/mapper/cryptroot rw rootflags=subvol=/`
   * **Watch out for the correct format for the rd.luks.name above!**
   * The _correct_ form of `rd.luks.name` is `rd.luks.name=<device UUID>=<mapper name>`
+  * The `device UUID` in this case is the UUID as reported by `blkid` that corresponds to the _physical_ partition encrypted
+    by LUKS (will have "TYPE=crypto_LUKS" in the description)
 
 
 ### Additional packages

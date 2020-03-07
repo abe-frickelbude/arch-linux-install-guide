@@ -16,6 +16,9 @@
 * Now launch `Themes` from the menu and set the individual components as desired.
 * Themes that _are more visually appealing than the default Adwaita nonsense_:
     * Ultimate Dark (with whatever accent color you prefer)
+      * Be aware that Ultima Dark has apparently discontinued support for Cinnamon, so you'll need to 
+      dowload and install one of the archived versions (the last one is 3.34, seems to be the same
+      as the current one except the current one removed Cinnamon support for some reason)
     * Win10 - gives an appearance very close to original Windows 10
 
 ## Enable "night mode" using redshift
