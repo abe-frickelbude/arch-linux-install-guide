@@ -1,15 +1,14 @@
 
-# Customization of a Manjaro [GNOME] installation originally created by the graphical installer
+# Customization of a Manjaro installation originally created by Arhitect
 
 ## Original hardware and software configuration
 
 This guide applies specifically to a configuration similar to the following specs:
 
 * OS resides on an NVMe drive
-* The root partition is fully encrypted via LUKS/dmcrypt
-* The UI is gnome(shell) as provided by the default Manjaro-GNOME graphical installer
-* The guide assumes the system has been originally installed using the official Manjaro-GNOME installer
-  using full root encryption and otherwise default configuration
+* The root partition is ext4 fully encrypted via `LUKS/dmcrypt`
+* The UI is `Cinnamon` as provided by manual installation via Architect
+* The guide assumes the system has been originally installed using Manjaro Architect (as outlined e.g. in `Manjaro-architect-install`)
 
 ```
 For transparency: My PC build is a Ryzen 7-based machine with a 2GB Samsung PCIe SSD and a
@@ -18,8 +17,7 @@ Radeon RX 570-based graphics card - i.e. YMMV depending on your actual system.
 
 ```
 The basic purpose of this guide is to generally describe the pitfalls produced by the current Manjaro installer,
-how to fix/improve them, and how to customize the install using "systemd-boot" and some modern boot loader features, 
-as well as establish an alternative desktop environment using Cinnamon
+how to fix/improve them, and how to customize the install using "systemd-boot" and some modern boot loader features
 ```
 
 ## Default installation pitfalls / drawbacks
@@ -72,7 +70,8 @@ Again, can use either `fdisk` or `gdisk` for this. Let's assume `fdisk`:
 * `p` to see the current partition table and note the partition numbers (necessary for other steps)
 * `t` to change partition type, select partition number (the boot one will most likely be `1`)
 * For the boot (ESP) partition, use `1` if not already set
-* For the root partition, use **TODO**
+* For the root partition, use `23` as type (this corresponds to `Linux Root x86_64` in the list of known partition types)
+
 
 
 ## Documentation links

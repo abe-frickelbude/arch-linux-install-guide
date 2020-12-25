@@ -1,4 +1,4 @@
-# Arch Linux Install Guide
+# Arch Linux Install Guide - will be rewritten SOON due to new/changed information!!!
 
 ## Basic
 
