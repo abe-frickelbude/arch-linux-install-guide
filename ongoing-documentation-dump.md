@@ -21,12 +21,29 @@ configuration files.
   * The above obviously doesn't apply if the Gnome destop is used (as installed by the corresponding
   graphical installer or via Manjaro Architect). In this case, Wayland is supported out-of-the-box and
   is enabled by default in case of AMD or Intel GPUs.  
-* If using an Nvidia GPU, you're basically out of luck for now (there's enough discussion on 
+  * If using an Nvidia GPU, you're basically out of luck for now (there's enough discussion on 
     Reddit/StackOverflow/etc - check those out for a detailed explanation why this is the case)
-* `XOrg` is properly support across all desktop environments and GPU manufacturers
+* `XOrg` is properly supported across all desktop environments and GPU manufacturers
 
+## AMD graphics card control
+
+At this moment, the _comfortable_ way of controlling an AMD graphics card appears to be the
+radeon-profile software, see <https://github.com/marazmista/radeon-profile> for details. There are
+AUR packages available for both `radeon-profile` and `radeon-profile-daemon`
+
+* In particular this provides a daemon which allows the control UI to run without elevated permissions
+* Can run minimized to tray (nice!)
+* It is quite simple to set up a custom fan control curve in the UI
+* Slight bummer: fan control may occasionally glitch and revert to "auto" - easy to fix in the UI by
+  re-applying the custom profile (i.e. the custom control curve is _not_ lost, the software just 
+  reverts to the automatic profile)
 
 ## mkinitcpio nuisances and troubleshooting
+
+### Configuration presets and boot loader entry generation
+
+
+
 
 ## Bitz an' piecez
 
