@@ -38,20 +38,6 @@ AUR packages available for both `radeon-profile` and `radeon-profile-daemon`
   re-applying the custom profile (i.e. the custom control curve is _not_ lost, the software just 
   reverts to the automatic profile)
 
-## mkinitcpio nuisances and troubleshooting
-
-### Configuration presets and boot loader entry generation
-
-
-### Pitfalls of systemd-based initramfs in conjunction with systemd-boot
-
-Switching the initramfs image from `udev` to `systemd` requires some modifications to the kernel command line
-parameters to boot properly, especially on an "encrypted root" system. If using the `systemd-boot` EFI bootloader,
-the boot loader entries are managed by the `sdboot-manage` script which (re)generates the said entries every time
-a kernel is installed or removed. Unfortunately this script doesn't "know" anything about systemd-based 
-init and only generates the required kernel command line parameters for "conventional" `udev`-based
-init scenarios.
-
 
 ## Bitz an' piecez
 
