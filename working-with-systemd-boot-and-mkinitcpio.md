@@ -64,6 +64,12 @@ for "conventional" `udev`-based init scenarios.
 
 ## Installing plymouth
 
+* Watch and follow the excellent tutorial by Ermano Ferrari (<rmannoferrari.net>) here: <https://www.youtube.com/watch?v=eTk2yG1JFsE>
+* The kernel parameters mentioned in the tutorial should be added to the `LINUX_OPTIONS` line in `sdboot-manage.conf`
+    instead of individual boot loader entries. This will allow the said options to be automatically added
+    to all generated boot loader entries when `sdboot-manage` script is executed. 
+* For AMD graphics cards, the `MODULES=(...)` line in `mkinitcpio.conf` should have a `radeon` module added.
+
 ## Nuisances and troubleshooting
 
 

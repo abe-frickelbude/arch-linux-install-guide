@@ -41,3 +41,11 @@ AUR packages available for both `radeon-profile` and `radeon-profile-daemon`
 
 ## Bitz an' piecez
 
+### Mounting additional stuff including network shares (SMB)
+
+* In general: don't forget the `uid=<used id>,gid=<group id>` in the mount entries in `/etc/fstab`, default for a single 
+  user installation will be `1001` for both, so that you have correct access permissions on mounted directories
+* Samba - don't bother with the stupid-ass `smb.conf`, there's too much documentation on the net and yet no useful
+  HOWTOs, just create an empty `/etc/samba/smb.conf` to keep the CLI utilities happy if you ever use them, e.g. `smbclient`,
+  and simply use the typical CIFS mount in `/etc/fstab` to permanently connect an SMB share, e.g. from a NAS.
+
