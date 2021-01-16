@@ -48,4 +48,8 @@ AUR packages available for both `radeon-profile` and `radeon-profile-daemon`
 * Samba - don't bother with the stupid-ass `smb.conf`, there's too much documentation on the net and yet no useful
   HOWTOs, just create an empty `/etc/samba/smb.conf` to keep the CLI utilities happy if you ever use them, e.g. `smbclient`,
   and simply use the typical CIFS mount in `/etc/fstab` to permanently connect an SMB share, e.g. from a NAS.
-
+* Mount stuff into `/mnt`, then symlink the mounts into your home for easier access
+* For EXT4: `umask`,`fmask`,`uid`,`gid` parameters are not supported - read this here: 
+  <https://unix.stackexchange.com/questions/33330/how-to-make-an-ext4-file-writable-on-mounting-by-a-user-not-root>
+  The correct permissions need to be set directly on the mount point, e.g. via `chown -R <user>:<group>` followed
+  by a desired `chmod -R 775` or similar
